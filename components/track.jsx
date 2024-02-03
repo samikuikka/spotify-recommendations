@@ -12,12 +12,12 @@ import {
 } from "@/components/ui/card";
 import Image from "next/image";
 
-export default function Component({ title, previewUrl }) {
+export default function Component({ title, previewUrl, artist }) {
   return (
-    <Card>
+    <Card className="max-w-[300px]">
       <CardHeader>
         <CardTitle>{title}</CardTitle>
-        <CardDescription>Music for Everyone</CardDescription>
+        <CardDescription>{artist}</CardDescription>
       </CardHeader>
       <CardContent>
         <Image

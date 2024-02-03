@@ -18,7 +18,7 @@ export default function Home() {
   }
 
   return (
-    <main className="flex min-h-screen bg-gray-300  flex-col items-center justify-between p-24">
+    <main className="flex min-h-screen bg-gray-300  flex-col items-center justify-between p-12">
       <div className="w-full">
         <div>Get recommendations</div>
         <Input
@@ -33,15 +33,18 @@ export default function Home() {
         >
           Submit
         </button>
-        {tracks.map((track, i) => {
-          return (
-            <Track
-              key={i}
-              title={track.name}
-              previewUrl={track.album.images[0].url}
-            />
-          );
-        })}
+        <div className="grid pt-10 grid-cols-3 gap-4">
+          {tracks.map((track, i) => {
+            return (
+              <Track
+                key={i}
+                title={track.name}
+                previewUrl={track.album.images[0].url}
+                artist={track.artists[0].name}
+              />
+            );
+          })}
+        </div>
       </div>
     </main>
   );
