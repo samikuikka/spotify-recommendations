@@ -62,7 +62,7 @@ export async function POST(req: Request, res: Response) {
     ];
 
     const chatRes = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
+      model: "gpt-3.5-turbo-0125",
       messages: messages,
       tools: tools,
       tool_choice: "auto",
@@ -86,7 +86,7 @@ export async function POST(req: Request, res: Response) {
     // Now i want to get artists from theses different genres that have been provided as a list, use gpt again to get artists from the different genres. Make so that it is in a list format at the end. Take insporation from the soution above.
 
     const genreArtist = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
+      model: "gpt-3.5-turbo-0125",
       messages: [
         {
           role: "system",
@@ -127,18 +127,9 @@ export async function POST(req: Request, res: Response) {
       tool_choice: "auto",
     });
 
-    const list = JSON.parse(
+    const artistNames = JSON.parse(
       genreArtist.choices[0].message.tool_calls![0].function.arguments
-    ).artists.slice(0, 5);
-
-    console.log(list);
-
-    const artistNames = [
-      "Kanye West",
-      "Drake",
-      "Kendrick Lamar",
-      "Travis Scott",
-    ];
+    ).artists.slice(0, 5) as string[];
 
     const spotifyToken = await fetch(
       `https://accounts.spotify.com/api/token?grant_type=client_credentials&client_id=${process.env.SPOTIFY_CLIENT_ID}&client_secret=${process.env.SPOTIFY_CLIENT_SECRET}`,
@@ -191,6 +182,8 @@ export async function POST(req: Request, res: Response) {
         return mostPopularTrack.id;
       })
     );
+
+    console.log(topTracks);
 
     return NextResponse.json(chatRes);
   } catch (e) {
