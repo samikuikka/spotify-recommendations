@@ -19,7 +19,7 @@ export default function Component({ title, previewUrl, artist }) {
         <CardTitle>{title}</CardTitle>
         <CardDescription>{artist}</CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="flex itmes-center justify-center">
         <Image
           alt=""
           height={300}
