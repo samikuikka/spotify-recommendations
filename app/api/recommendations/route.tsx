@@ -183,9 +183,20 @@ export async function POST(req: Request, res: Response) {
       })
     );
 
-    console.log(topTracks);
+    const recommendationRes = await fetch(
+      `https://api.spotify.com/v1/recommendations?seed_genres=${validGenres.join(
+        ","
+      )}`,
+      {
+        headers: {
+          Authorization: token,
+        },
+      }
+    );
 
-    return NextResponse.json(chatRes);
+    const recommendationData = await recommendationRes.json();
+
+    return NextResponse.json(recommendationData);
   } catch (e) {
     console.log(e);
     return new NextResponse("Internal Server Error", { status: 500 });
