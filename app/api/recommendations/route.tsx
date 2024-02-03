@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
+import {
+  ChatCompletionMessageParam,
+  ChatCompletionTool,
+} from "openai/resources/index.mjs";
 
 const openai = new OpenAI({
   apiKey: process.env.OPEN_AI_KEY,
@@ -7,13 +11,51 @@ const openai = new OpenAI({
 
 export async function POST() {
   try {
-    const messages = [
-      { role: "user", content: "What's the weather like in Boston today?" },
+    const messages: ChatCompletionMessageParam[] = [
+      {
+        role: "system",
+        content: `
+            Your job is to tchoose 3-5 genres from the following genre list after user input. 
+            Analyze the user prompt and identify best genres to recommend.
+            Available genres are:
+            rock, metal, pop, classical, foo, bar, blues, country, dance
+        `,
+      },
+      {
+        role: "user",
+        content: "User prompt: I want to listen to something relaxing.",
+      },
+    ];
+    const tools: ChatCompletionTool[] = [
+      {
+        type: "function",
+        function: {
+          name: "list_of_genres",
+          description:
+            "Retrrieves 3-5 genres from the genre list based on the user's input",
+          parameters: {
+            type: "object",
+            properties: {
+              genres: {
+                type: "array",
+                items: {
+                  type: "string",
+                  description: "The genre from the genre list",
+                },
+                minItems: 3,
+                maxItems: 5,
+              },
+            },
+          },
+        },
+      },
     ];
 
     const res = await openai.chat.completions.create({
-      messages: [{ role: "system", content: "You are a helpful assistant." }],
       model: "gpt-3.5-turbo",
+      messages: messages,
+      tools: tools,
+      tool_choice: "auto",
     });
 
     console.log(res);
