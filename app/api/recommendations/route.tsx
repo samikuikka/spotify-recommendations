@@ -82,7 +82,67 @@ export async function POST(req: Request, res: Response) {
     // Genres are valid
     const validGenres = genreResult.data;
 
-    console.log(validGenres);
+    const artistNames = [
+      "Kanye West",
+      "Drake",
+      "Kendrick Lamar",
+      "Travis Scott",
+    ];
+
+    const spotifyToken = await fetch(
+      `https://accounts.spotify.com/api/token?grant_type=client_credentials&client_id=${process.env.SPOTIFY_CLIENT_ID}&client_secret=${process.env.SPOTIFY_CLIENT_SECRET}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+      }
+    );
+    const data = await spotifyToken.json(); // Converts the response body to JSON
+    const tokenSchema = z.object({
+      access_token: z.string(),
+      token_type: z.string(),
+      expires_in: z.number(),
+    });
+    const tokenResult = tokenSchema.safeParse(data);
+    if (!tokenResult.success) {
+      return new NextResponse("Invalid Spotify token", { status: 500 });
+    }
+    const token = `Bearer ${tokenResult.data.access_token}`;
+
+    const artistIds = await Promise.all(
+      artistNames.map(async (artist) => {
+        const artistRes = await fetch(
+          `https://api.spotify.com/v1/search?q=${artist}&type=artist&limit=1`,
+          {
+            headers: {
+              Authorization: token,
+            },
+          }
+        );
+        const artistData = await artistRes.json();
+        return artistData.artists.items[0].id;
+      })
+    );
+
+    console.log(artistIds);
+    const topTracks = await Promise.all(
+      artistIds.map(async (id) => {
+        const topTracksRes = await fetch(
+          `https://api.spotify.com/v1/artists/${id}/top-tracks?market=US`,
+          {
+            headers: {
+              Authorization: token,
+            },
+          }
+        );
+        const topTracksData = await topTracksRes.json();
+        let mostPopularTrack = topTracksData.tracks[0];
+        return mostPopularTrack.id;
+      })
+    );
+    console.log(topTracks);
+
     return NextResponse.json(chatRes);
   } catch (e) {
     console.log(e);
