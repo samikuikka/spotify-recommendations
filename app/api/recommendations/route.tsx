@@ -5,6 +5,8 @@ import {
   ChatCompletionTool,
 } from "openai/resources/index.mjs";
 
+import genresList from '@/lib/genres.json';
+
 const openai = new OpenAI({
   apiKey: process.env.OPEN_AI_KEY,
 });
@@ -17,8 +19,8 @@ export async function POST() {
         content: `
             Your job is to tchoose 3-5 genres from the following genre list after user input. 
             Analyze the user prompt and identify best genres to recommend.
-            Available genres are:
-            rock, metal, pop, classical, foo, bar, blues, country, dance
+            Available genres are: ${genresList.join(", ")}
+            
         `,
       },
       {
