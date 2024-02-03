@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
+import Track from "@/components/track";
 
 export default function Home() {
   const [prompt, setPrompt] = useState("");
@@ -12,12 +13,13 @@ export default function Home() {
       body: JSON.stringify({ prompt: prompt }),
     });
     const data = await res.json();
+    console.log(data.tracks);
     setTracks(data.tracks);
   }
 
   return (
     <main className="flex min-h-screen bg-gray-300  flex-col items-center justify-between p-24">
-      <div className=" max-w-[300px] w-full">
+      <div className="w-full">
         <div>Get recommendations</div>
         <Input
           placeholder="Create a prompt for your new playlist"
@@ -31,6 +33,15 @@ export default function Home() {
         >
           Submit
         </button>
+        {tracks.map((track, i) => {
+          return (
+            <Track
+              key={i}
+              title={track.name}
+              previewUrl={track.album.images[0].url}
+            />
+          );
+        })}
       </div>
     </main>
   );
