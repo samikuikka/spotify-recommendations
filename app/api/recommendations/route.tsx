@@ -7,6 +7,7 @@ import {
 import { z } from "zod";
 
 import genresList from "@/lib/genres.json";
+import { list } from "postcss";
 
 const openai = new OpenAI({
   apiKey: process.env.OPEN_AI_KEY,
@@ -82,6 +83,56 @@ export async function POST(req: Request, res: Response) {
     // Genres are valid
     const validGenres = genreResult.data;
 
+    // Now i want to get artists from theses different genres that have been provided as a list, use gpt again to get artists from the different genres. Make so that it is in a list format at the end. Take insporation from the soution above.
+
+    const genreArtist = await openai.chat.completions.create({
+      model: "gpt-3.5-turbo",
+      messages: [
+        {
+          role: "system",
+          content: `
+            You are given list of genres. From each genre give 1 popular artist name! GIVE ONLY ARTIST NAME NOT THE GENRE!.
+            Genres: ${validGenres.join(", ")}
+        `,
+        },
+        {
+          role: "user",
+          content: `List of artists:`,
+        },
+      ],
+      tools: [
+        {
+          type: "function",
+          function: {
+            name: "list_of_artists",
+            description:
+              "Retrrieves 3-5 artists from the genre list based on the user's input",
+            parameters: {
+              type: "object",
+              properties: {
+                artists: {
+                  type: "array",
+                  items: {
+                    type: "string",
+                    description: "The artist name",
+                  },
+                  minItems: 3,
+                  maxItems: 5,
+                },
+              },
+            },
+          },
+        },
+      ],
+      tool_choice: "auto",
+    });
+
+    const list = JSON.parse(
+      genreArtist.choices[0].message.tool_calls![0].function.arguments
+    ).artists.slice(0, 5);
+
+    console.log(list);
+
     const artistNames = [
       "Kanye West",
       "Drake",
@@ -125,7 +176,6 @@ export async function POST(req: Request, res: Response) {
       })
     );
 
-    console.log(artistIds);
     const topTracks = await Promise.all(
       artistIds.map(async (id) => {
         const topTracksRes = await fetch(
@@ -141,7 +191,6 @@ export async function POST(req: Request, res: Response) {
         return mostPopularTrack.id;
       })
     );
-    console.log(topTracks);
 
     return NextResponse.json(chatRes);
   } catch (e) {
