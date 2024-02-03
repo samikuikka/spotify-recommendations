@@ -12,8 +12,15 @@ const openai = new OpenAI({
   apiKey: process.env.OPEN_AI_KEY,
 });
 
-export async function POST() {
+export async function POST(req: Request, res: Response) {
   try {
+    const { prompt } = await req.json();
+    const promptSchema = z.string().nonempty();
+    const promptResult = promptSchema.safeParse(prompt);
+    if (!promptResult.success) {
+      return new NextResponse("Prompt is required", { status: 400 });
+    }
+
     const messages: ChatCompletionMessageParam[] = [
       {
         role: "system",
@@ -25,7 +32,7 @@ export async function POST() {
       },
       {
         role: "user",
-        content: "User prompt: I want to listen to something relaxing.",
+        content: `User prompt: ${prompt}`,
       },
     ];
     const tools: ChatCompletionTool[] = [
@@ -53,7 +60,7 @@ export async function POST() {
       },
     ];
 
-    const res = await openai.chat.completions.create({
+    const chatRes = await openai.chat.completions.create({
       model: "gpt-3.5-turbo",
       messages: messages,
       tools: tools,
@@ -61,7 +68,7 @@ export async function POST() {
     });
 
     const genres = JSON.parse(
-      res.choices[0].message.tool_calls![0].function.arguments
+      chatRes.choices[0].message.tool_calls![0].function.arguments
     ).genres;
     const genreSchema = z.array(z.string()).refine((val) => {
       return val.every((genre) => genresList.includes(genre));
@@ -76,7 +83,7 @@ export async function POST() {
     const validGenres = genreResult.data;
 
     console.log(validGenres);
-    return NextResponse.json(res);
+    return NextResponse.json(chatRes);
   } catch (e) {
     console.log(e);
     return new NextResponse("Internal Server Error", { status: 500 });

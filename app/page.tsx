@@ -1,13 +1,14 @@
 "use client";
-
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
 
 export default function Home() {
+  const [prompt, setPrompt] = useState("");
 
   async function onSubmit() {
-    console.log('clicked')
     const res = await fetch("/api/recommendations", {
       method: "POST",
+      body: JSON.stringify({ prompt: prompt }),
     });
     const data = await res.json();
     console.log(data);
@@ -20,11 +21,15 @@ export default function Home() {
         <Input
           placeholder="Create a prompt for your new playlist"
           className=""
+          onChange={(e) => setPrompt(e.target.value)}
         />
         <button
+          disabled={!prompt}
           onClick={() => onSubmit()}
           className="bg-blue-500 text-white p-2 rounded-md mt-4"
-        >Submit</button>
+        >
+          Submit
+        </button>
       </div>
     </main>
   );
