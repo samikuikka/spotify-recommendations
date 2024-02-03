@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 
 export default function Home() {
   const [prompt, setPrompt] = useState("");
+  const [tracks, setTracks] = useState([] as any[]);
 
   async function onSubmit() {
     const res = await fetch("/api/recommendations", {
@@ -11,7 +12,7 @@ export default function Home() {
       body: JSON.stringify({ prompt: prompt }),
     });
     const data = await res.json();
-    console.log(data);
+    setTracks(data.tracks);
   }
 
   return (

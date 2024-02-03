@@ -184,7 +184,7 @@ export async function POST(req: Request, res: Response) {
     );
 
     const recommendationRes = await fetch(
-      `https://api.spotify.com/v1/recommendations?seed_genres=${validGenres.join(
+      `https://api.spotify.com/v1/recommendations?seed_tracks=${topTracks.join(
         ","
       )}`,
       {
